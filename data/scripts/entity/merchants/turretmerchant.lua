@@ -41,12 +41,12 @@ function TurretMerchant.shop:addItems()
     -- create all turrets
     local turrets = {}
 
-    for i = 1, 23 do
+    for i = 1, 38 do
         local turret = InventoryTurret(TurretGenerator.generate(Sector():getCoordinates()))
 
         local pair = {}
         pair.turret = turret
-        pair.amount = getInt(5, 20)
+        pair.amount = getInt(10, 50)
 
         if turret.rarity.value == 1 then -- uncommon weapons may be more than one
             if math.random() < 0.3 then

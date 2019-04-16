@@ -30,7 +30,7 @@ function EquipmentDock.shop:addItems()
 
     local counter = 0
     local systems = {}
-    while counter < 23 do
+    while counter < 38 do
 
         local x, y = Sector():getCoordinates()
         local rarities, weights = UpgradeGenerator.getSectorProbabilities(x, y)
@@ -49,7 +49,7 @@ function EquipmentDock.shop:addItems()
     table.sort(systems, sortSystems)
 
     for _, system in pairs(systems) do
-        EquipmentDock.shop:add(system, getInt(1, 2))
+        EquipmentDock.shop:add(system, getInt(1, 10))
     end
 
 end

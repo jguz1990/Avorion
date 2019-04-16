@@ -43,7 +43,7 @@ function TorpedoMerchant.shop:addItems()
     -- create all torpedoes
     local allTorpedoes = {}
 
-    for i = 1, 23 do
+    for i = 1, 38 do
         local torpedo = TorpedoGenerator.generate(Sector():getCoordinates())
 
         for _, p in pairs(allTorpedoes) do
