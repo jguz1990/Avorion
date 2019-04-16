@@ -22,12 +22,14 @@ local function new()
     instance.tax = 0.2
 
     -- UI
+
     instance.soldItemFrames = {}
     instance.soldItemNameLabels = {}
     instance.soldItemPriceLabels = {}
     instance.soldItemMaterialLabels = {}
     instance.soldItemStockLabels = {}
     instance.soldItemButtons = {}
+    instance.soldAllItemButtons = {}
     instance.soldItemIcons = {}
 
     instance.boughtItemFrames = {}
@@ -48,7 +50,7 @@ local function new()
     instance.buybackItemButtons = {}
     instance.buybackItemIcons = {}
 
-    instance.itemsPerPage = 23
+    instance.itemsPerPage = 38
 
     instance.soldItems = {}
     instance.boughtItems = {}
@@ -160,7 +162,7 @@ function Shop:buildGui(window, guiType) -- client
 --    window:createFrame(Rect(size))
 
     if guiType == 0 then
-        buttonCaption = "Buy"%_t
+        buttonCaption = "Buy 1"%_t
         buttonCallback = "onBuyButtonPressed"
     elseif guiType == 1 then
         buttonCaption = "Sell"%_t
@@ -194,24 +196,27 @@ function Shop:buildGui(window, guiType) -- client
     local y = 15
 
     if guiType == 1 then
-        local button = window:createButton(Rect(buttonX, 0, 160 + buttonX, 30), "Sell Trash"%_t, "onSellTrashButtonPressed")
-        button.maxTextSize = 15
+        local button = window:createButton(Rect(buttonX, 0, 80 + buttonX, 10), "Sell Trash"%_t, "onSellTrashButtonPressed")
+        button.maxTextSize = 10
     end
 
     for i = 1, self.itemsPerPage do
 
-        local yText = y + 5
+        local yText = y + 1
 
-        local frame = window:createFrame(Rect(0, y, buttonX - 10, 30 + y))
+        local frame = window:createFrame(Rect(0, y, buttonX - 10, 18 + y))
 
         local nameLabel = window:createLabel(vec2(nameX, yText), "", 12)
         local priceLabel = window:createLabel(vec2(priceX, yText), "", 12)
         local materialLabel = window:createLabel(vec2(materialX, yText), "", 12)
         local stockLabel = window:createLabel(vec2(stockX, yText), "", 12)
-        local button = window:createButton(Rect(buttonX, y, 160 + buttonX, 30 + y), buttonCaption, buttonCallback)
-        local icon = window:createPicture(Rect(pictureX, yText - 5, 29 + pictureX, 29 + yText - 5), "")
+        local button = window:createButton(Rect(buttonX, y, 80 + buttonX - 1, 18 + y), buttonCaption, buttonCallback)
+        local button2 = window:createButton(Rect(buttonX + 80 + 1, y, 160 + buttonX - 1, 18 + y), "Buy All", "onBuyAllButtonPressed")
+        local icon = window:createPicture(Rect(pictureX, yText - 1, 17 + pictureX, 17 + yText - 1), "")
 
-        button.maxTextSize = 15
+        button2.maxTextSize = 10
+
+        button.maxTextSize = 10
         icon.isIcon = 1
 
         if guiType == 0 then
@@ -221,6 +226,7 @@ function Shop:buildGui(window, guiType) -- client
             table.insert(self.soldItemMaterialLabels, materialLabel)
             table.insert(self.soldItemStockLabels, stockLabel)
             table.insert(self.soldItemButtons, button)
+            table.insert(self.soldAllItemButtons, button2)
             table.insert(self.soldItemIcons, icon)
         elseif guiType == 1 then
             table.insert(self.boughtItemFrames, frame)
@@ -246,9 +252,10 @@ function Shop:buildGui(window, guiType) -- client
         materialLabel:hide();
         stockLabel:hide();
         button:hide();
+        button2:hide();
         icon:hide();
 
-        y = y + 35
+        y = y + 21
     end
 
 end
@@ -360,6 +367,7 @@ function Shop:updateSellGui() -- client
     for i, v in pairs(self.soldItemMaterialLabels) do v:hide() end
     for i, v in pairs(self.soldItemStockLabels) do v:hide() end
     for i, v in pairs(self.soldItemButtons) do v:hide() end
+    for i, v in pairs(self.soldAllItemButtons) do v:hide() end
     for i, v in pairs(self.soldItemIcons) do v:hide() end
 
     local faction = Faction()
@@ -377,6 +385,7 @@ function Shop:updateSellGui() -- client
         self.soldItemMaterialLabels[index]:show()
         self.soldItemStockLabels[index]:show()
         self.soldItemButtons[index]:show()
+        self.soldAllItemButtons[index]:show()
         self.soldItemIcons[index]:show()
 
         self.soldItemNameLabels[index].caption = item.name
@@ -553,6 +562,17 @@ function Shop:onBuyButtonPressed(button) -- client
     invokeServerFunction("sellToPlayer", itemIndex)
 end
 
+function Shop:onBuyAllButtonPressed(button) -- client
+    local itemIndex = 0
+    for i, b in pairs(self.soldAllItemButtons) do
+        if button.index == b.index then
+            itemIndex = i
+        end
+    end
+    
+    invokeServerFunction("sellAToPlayer", itemIndex)
+end
+
 function Shop:onSellButtonPressed(button) -- client
     local itemIndex = 0
     for i, b in pairs(self.boughtItemButtons) do
@@ -653,6 +673,63 @@ function Shop:sellToPlayer(itemIndex) -- server
 
     -- do a broadcast to all clients that the item is sold out/changed
     broadcastInvokeClientFunction("receiveSoldItems", self.soldItems, self.buybackItems)
+end
+
+function Shop:sellAToPlayer(itemIndex) -- server
+
+    local buyer, ship, player = getInteractingFaction(callingPlayer, AlliancePrivilege.SpendResources, AlliancePrivilege.AddItems)
+    if not buyer then return end
+
+    local station = Entity()
+
+    local item = self.soldItems[itemIndex]
+    if item == nil then
+        player:sendChatMessage(station, 1, "Item to buy not found"%_t)
+        return
+    end
+
+    local itemTotal = item.amount
+
+    for ii = 1, itemTotal do 
+
+        local canPay, msg, args = buyer:canPay(item.price)
+        if not canPay then
+            player:sendChatMessage(station, 1, msg, unpack(args))
+            return
+        end
+
+        -- test the docking last so the player can know what he can buy from afar already
+        local errors = {}
+        errors[EntityType.Station] = "You must be docked to the station to buy items."%_T
+        errors[EntityType.Ship] = "You must be closer to the ship to buy items."%_T
+        if not CheckPlayerDocked(player, station, errors) then
+            return
+        end
+
+        local msg, args = item:boughtByPlayer(ship)
+        if msg and msg ~= "" then
+            player:sendChatMessage(station, 1, msg, unpack(args))
+            return
+        end
+
+        receiveTransactionTax(station, item.price * self.tax)
+
+        buyer:pay("Bought an item for %1% credits."%_T, item.price)
+
+        -- remove item
+        item.amount = item.amount - 1
+        if item.amount == 0 then
+            self.soldItems[itemIndex] = nil
+            self:rebuildTables()
+        end
+
+        Galaxy():changeFactionRelations(buyer, Faction(), GetRelationChangeFromMoney(item.price))
+
+        -- do a broadcast to all clients that the item is sold out/changed
+        broadcastInvokeClientFunction("receiveSoldItems", self.soldItems, self.buybackItems)
+
+    end
+
 end
 
 function Shop:buyFromPlayer(itemIndex) -- server
@@ -841,8 +918,36 @@ function Shop:renderUI()
                     local u = frame.upper
 
                     if mouse.x >= l.x and mouse.x <= u.x then
+                        if mouse.y >= l.y and mouse.y <= u.y then
+                            local renderer = TooltipRenderer(self.soldItems[i]:getTooltip())
+                            renderer:drawMouseTooltip(Mouse().position)
+                        end
+                    end
+                end
+            end
+        end
+
+        for i, Allbutton in pairs(self.soldAllItemButtons) do
+
+            if self.soldAllItemButtons[i] ~= nil then
+                if Allbutton.visible then
+
+                    local l = Allbutton.lower
+                    local u = Allbutton.upper
+
+                    if mouse.x >= l.x and mouse.x <= u.x then
                     if mouse.y >= l.y and mouse.y <= u.y then
-                        local renderer = TooltipRenderer(self.soldItems[i]:getTooltip())
+                        local item = self.soldItems[i]
+                        local tooltip = Tooltip()
+                        
+                        local line = TooltipLine(15, 14)
+                        line.ltext = "Total Cost:"%_t
+                        line.lcolor = ColorRGB(0.898, 0.643, 0.086)
+                        line.rtext = createMonetaryString(item.price * item.amount)%_t
+                        line.rcolor = ColorRGB(0.898, 0.643, 0.086)
+                        tooltip:addLine(line)
+
+                        local renderer = TooltipRenderer(tooltip)
                         renderer:drawMouseTooltip(Mouse().position)
                     end
                     end
@@ -941,6 +1046,7 @@ function PublicNamespace.CreateNamespace()
     result.sendItems = function(...) return shop:sendItems(...) end
     result.receiveSoldItems = function(...) return shop:receiveSoldItems(...) end
     result.sellToPlayer = function(...) return shop:sellToPlayer(...) end
+    result.sellAToPlayer = function(...) return shop:sellAToPlayer(...) end
     result.buyFromPlayer = function(...) return shop:buyFromPlayer(...) end
     result.buyTrashFromPlayer = function(...) return shop:buyTrashFromPlayer(...) end
     result.sellBackToPlayer = function(...) return shop:sellBackToPlayer(...) end
@@ -948,6 +1054,7 @@ function PublicNamespace.CreateNamespace()
     result.onLeftButtonPressed = function(...) return shop:onLeftButtonPressed(...) end
     result.onRightButtonPressed = function(...) return shop:onRightButtonPressed(...) end
     result.onBuyButtonPressed = function(...) return shop:onBuyButtonPressed(...) end
+    result.onBuyAllButtonPressed = function(...) return shop:onBuyAllButtonPressed(...) end
     result.onSellButtonPressed = function(...) return shop:onSellButtonPressed(...) end
     result.onSellTrashButtonPressed = function(...) return shop:onSellTrashButtonPressed(...) end
     result.onBuybackButtonPressed = function(...) return shop:onBuybackButtonPressed(...) end
@@ -966,6 +1073,7 @@ function PublicNamespace.CreateNamespace()
     callable(result, "buyTrashFromPlayer")
     callable(result, "sellBackToPlayer")
     callable(result, "sellToPlayer")
+    callable(result, "sellAToPlayer")
     callable(result, "sendItems")
 
     return result
