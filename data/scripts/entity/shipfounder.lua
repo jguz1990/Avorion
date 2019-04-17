@@ -91,7 +91,7 @@ function ShipFounder.initUI()
     local rect = lister:nextRect(20)
     local label = window:createLabel(rect, "Founding Fee (?)"%_t, 14);
     label:setLeftAligned()
-    label.tooltip = "Every ship costs a founding fee. The more ships you own, the higher the fee."%_t
+    label.tooltip = "Every ship costs a basic material founding fee. The more ships you own, the higher the material tier."%_t
 
     feeLabel = window:createLabel(rect, "", 14);
     feeLabel:setRightAligned()
@@ -125,15 +125,15 @@ function ShipFounder.foundShip(faction, player, name)
         return
     end
 
-    local money, resources = ShipFounding.getNextShipCosts(faction)
+    local resources = ShipFounding.getNextShipCosts(faction)
 
-    local ok, msg, args = faction:canPay(money, unpack(resources))
+    local ok, msg, args = faction:canPay(0, unpack(resources))
     if not ok then
         player:sendChatMessage("", 1, msg, unpack(args))
         return
     end
 
-    local args = {money = money}
+    local args = {}
     local material = Material()
     for i, amount in pairs(resources) do
         if amount > 0 then
@@ -144,11 +144,7 @@ function ShipFounder.foundShip(faction, player, name)
         end
     end
 
-    if money > 0 then
-        faction:pay("Paid ${money} credits, ${amount} ${material} to found a ship."%_T % args, money, unpack(resources))
-    else
-        faction:pay("Paid ${money} credits, ${amount} ${material} to found a ship."%_T % args, money, unpack(resources))
-    end
+    faction:pay("Paid ${amount} ${material} to found a ship."%_T % args, 0, unpack(resources))
 
     local self = Entity()
 
@@ -171,17 +167,15 @@ function ShipFounder.onAllianceCheckBoxChecked()
 end
 
 function ShipFounder.refreshUI()
-    local money, resources
+    local resources
     local ships = 0
 
     local alliance = Player().alliance
     if allianceCheckBox.checked and alliance then
-        money, resources, ships = ShipFounding.getNextShipCosts(alliance)
+        resources, ships = ShipFounding.getNextShipCosts(alliance)
     else
-        money, resources, ships = ShipFounding.getNextShipCosts(Player())
+        resources, ships = ShipFounding.getNextShipCosts(Player())
     end
-
-    feeLabel.caption = createMonetaryString(money) .. " Cr"
 
     local amount = 500
     local material = Material(MaterialType.Naonite)

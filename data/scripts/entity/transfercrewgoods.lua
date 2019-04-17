@@ -133,7 +133,7 @@ function TransferCrewGoods.initUI()
     rightLister.marginRight = 30
 
     -- margin for the icon
-    leftLister.marginLeft = 40
+    leftLister.marginLeft = 35
     rightLister.marginRight = 60
 
     local leftFrame = crewTab:createScrollFrame(vSplit.left)
@@ -153,7 +153,7 @@ function TransferCrewGoods.initUI()
 
     for i = 1, CrewProfessionType.Number * 4 do
 
-        local iconRect = Rect(leftLister.inner.topLeft - vec2(30, 0), leftLister.inner.topLeft + vec2(0, 30))
+        local iconRect = Rect(leftLister.inner.topLeft - vec2(30, 0), leftLister.inner.topLeft + vec2(-5, 25))
         local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 10, 0, 0.85)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 10, 0, 0.75)
@@ -177,7 +177,7 @@ function TransferCrewGoods.initUI()
         textboxIndexByButton[button.index] = box.index
 
 
-        local iconRect = Rect(rightLister.inner.topRight, rightLister.inner.topRight + vec2(30, 30))
+        local iconRect = Rect(rightLister.inner.topRight - vec2(-5, 0), rightLister.inner.topRight + vec2(30, 25))
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 10, 0, 0.15)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 10, 0, 0.25)
@@ -211,7 +211,7 @@ function TransferCrewGoods.initUI()
     rightLister.marginRight = 30
 
     -- margin for the icon
-    leftLister.marginLeft = 40
+    leftLister.marginLeft = 35
     rightLister.marginRight = 60
 
     local leftFrame = cargoTab:createScrollFrame(vSplit.left)
@@ -231,7 +231,7 @@ function TransferCrewGoods.initUI()
 
     for i = 1, 100 do
 
-        local iconRect = Rect(leftLister.inner.topLeft - vec2(30, 0), leftLister.inner.topLeft + vec2(0, 30))
+        local iconRect = Rect(leftLister.inner.topLeft - vec2(30, 0), leftLister.inner.topLeft + vec2(-5, 25))
         local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 10, 0, 0.85)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 10, 0, 0.75)
@@ -255,7 +255,7 @@ function TransferCrewGoods.initUI()
         textboxIndexByButton[button.index] = box.index
 
 
-        local iconRect = Rect(rightLister.inner.topRight, rightLister.inner.topRight + vec2(30, 30))
+        local iconRect = Rect(rightLister.inner.topRight - vec2(-5, 0), rightLister.inner.topRight + vec2(30, 25))
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 10, 0, 0.15)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 10, 0, 0.25)
