@@ -76,6 +76,8 @@ function Refinery.initialize()
     if onClient() and EntityIcon().icon == "" then
         EntityIcon().icon = "data/textures/icons/pixel/resources.png"
         InteractionText(station.index).text = Dialog.generateStationInteractionText(station, random())
+    else
+        Sector():registerCallback("onRestoredFromDisk", "onRestoredFromDisk")
     end
 end
 
@@ -209,11 +211,13 @@ function Refinery.getRefiningTime(oreAmounts, scrapAmounts)
 
     if time == 0 then return 0 end
 
-    return math.max(1, round(time / 8000))
+    return math.max(1, round(time / 10000))
 end
 
-function Refinery.getTaxFactor(stationFaction, customerFaction)
-    return lerp(customerFaction:getRelations(stationFaction), -25000, 100000, 0.1, 0.01)
+function Refinery.getTaxFactor(stationFactionIndex, customerFaction)
+    if stationFactionIndex == customerFaction.index then return 0 end
+
+    return lerp(customerFaction:getRelations(stationFactionIndex), -25000, 100000, 0.1, 0.01)
 end
 
 function Refinery.applyTax(amounts, taxFactor)

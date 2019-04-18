@@ -788,7 +788,7 @@ function onGoodsButtonPressed(button, stolen, amount)
     if onClient() then
         local amount = 1
         if Keyboard():keyPressed(KeyboardKey.LControl) then
-            amount = 10
+            amount = 1000
         end
 
         invokeServerFunction("onGoodsButtonPressed", button.tooltip, stolenCargoCheckBox.checked, amount)
@@ -804,7 +804,7 @@ function onGoodsButtonPressed(button, stolen, amount)
 
     good.stolen = stolen
 
-    for i = 1, 10 do
+    for i = 1, 15 do
         craft:addCargo(good, amount)
     end
 end
