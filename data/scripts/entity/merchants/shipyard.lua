@@ -771,5 +771,3 @@ function Shipyard.secure()
     return runningJobs
 end
 
-local success, err = pcall(require, "mods/advShipyard/scripts/entity/merchants/shipyard")
-if not success then print("Failed to load advShipyard", err) end
