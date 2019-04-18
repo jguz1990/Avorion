@@ -20,3 +20,5 @@ if entity.allianceOwned or entity.playerOwned then
     entity:addScriptOnce("mods/SectorManager/scripts/entity/SectorManager.lua")
     entity:addScriptOnce("mods/CarrierCommander/scripts/entity/CarrierCommander.lua")
 end
+
+if not entity.aiOwned and (entity.isShip or entity.isStation or entity.isDrone) then entity:addScriptOnce("mods/SectorOverview/scripts/entity/sectoroverview.lua") end -- MOD: SectorOverview
