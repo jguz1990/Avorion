@@ -26,8 +26,8 @@ function getBonuses(seed, rarity)
     local velocity = 0.5
 
     local lootRange = 2000
-    local deepScan = 10
-    local radar = 10
+    local deepScan = 20
+    local radar = 20
 
     return energy, recharge, militarySlots, arbitrarySlots, civilSlots, shields, hsReach, hsCdFactor, hsEnergy, cargo, velocity, lootRange, deepScan, radar
 end

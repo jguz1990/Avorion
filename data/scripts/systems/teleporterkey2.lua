@@ -10,7 +10,7 @@ FixedEnergyRequirement = true
 Unique = true
 
 function getNumTurrets(seed, rarity, permanent)
-    return 20
+    return 30
 end
 
 function onInstalled(seed, rarity, permanent)

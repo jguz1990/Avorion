@@ -19,7 +19,7 @@ function getBonuses(seed, rarity, permanent)
     range = range + (rarity.value + 1) * 80 -- add 0 (worst rarity) to +480 (best rarity)
     -- add randomized range, span is based on rarity
     range = range + math.random() * ((rarity.value + 1) * 20) -- add random value between 0 (worst rarity) and 120 (best rarity)
-
+    range = range * 4
     local material = rarity.value + 1
     if math.random() < 0.25 then
         material = material + 1
@@ -30,6 +30,7 @@ function getBonuses(seed, rarity, permanent)
     amount = amount + (rarity.value + 1) * 2 -- add 0 (worst rarity) to +120 (best rarity)
     -- add randomized amount, span is based on rarity
     amount = amount + math.random() * ((rarity.value + 1) * 5) -- add random value between 0 (worst rarity) and 60 (best rarity)
+	amount = amount * 2
 
     if permanent then
         range = range * 1.5
